@@ -5,9 +5,9 @@ module.exports = function (req, res, next) {
   //get the token from the request.header
   const token = req.header("x-auth-token");
 
-  //check if it's not the token
+  //check if there's a token
   if (!token) {
-    //status(401) is unauthorised
+    //status(401) is unauthorised because there is no token in the header
     return res.status(401).json({
       msg: "No token, authorization denied!",
     });
@@ -17,5 +17,12 @@ module.exports = function (req, res, next) {
   try {
     //jwt.verify(the-token, the-secret)
     const decoded = jwt.verify(token, config.get("jwtSecret"));
-  } catch (err) {}
+
+    req.user = decoded.user;
+    next();
+  } catch (err) {
+    if (err) {
+      res.status(401).json({ msg: "Token is not valid!" });
+    }
+  }
 };

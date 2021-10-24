@@ -15,11 +15,23 @@ const User = require("../models/User");
 
 const { check, validationResult } = require("express-validator/check");
 
+//we protect routes using this middleware and we use auth as a parameter to protect a route
+const auth = require("../middleware/auth");
+
 //@route  GET   api/auth
 //@desc         get logged in user
 //@access       private
-router.get("/", (req, res) => {
-  res.send("Get logged in user");
+router.get("/", auth, async (req, res) => {
+  try {
+    //we get the user from the database using the user's id
+    const user = await User.findById(req.user.id).select("-password");
+
+    //we send the user back here in json format
+    res.json(user);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server error!");
+  }
 });
 
 //@route  POST  api/auth
